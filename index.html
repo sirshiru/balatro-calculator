@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balatro Chip Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red: #ff4d4d;
+      --white: #ffffff;
+      --black: #1a1a1a;
+      --gray: #333333;
+      --light-gray: #999999;
+      --pixel-shadow: 4px 4px 0px var(--black);
+      --pixel-border: 3px solid var(--black);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Press Start 2P', monospace;
+      image-rendering: pixelated;
+      -webkit-font-smoothing: none;
+    }
+
+    body {
+      background-color: var(--red);
+      color: var(--white);
+      line-height: 1.5;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 20px 0;
+      font-size: 1.5rem;
+      text-shadow: var(--pixel-shadow);
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.1);
+      border: var(--pixel-border);
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .section h2 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--white);
+      text-shadow: var(--pixel-shadow);
+    }
+
+    .hand-row {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    .hand-name {
+      flex: 1;
+      font-size: 0.7rem;
+    }
+
+    .hand-count {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn {
+      background: var(--white);
+      border: var(--pixel-border);
+      color: var(--black);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .btn:active {
+      transform: translate(2px, 2px);
+    }
+
+    .count {
+      width: 30px;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .multiplier-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .multiplier-input label {
+      font-size: 0.8rem;
+    }
+
+    .multiplier-input input {
+      width: 60px;
+      padding: 5px;
+      border: var(--pixel-border);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.8rem;
+    }
+
+    .toggle-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+      background-color: var(--light-gray);
+      border: var(--pixel-border);
+      border-radius: 3px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transition: .2s;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+      background-color: var(--white);
+      transition: .2s;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: var(--red);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    .results {
+      background: var(--black);
+      padding: 15px;
+      border: var(--pixel-border);
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .results h2 {
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    .total {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--white);
+      text-shadow: 2px 2px 0 var(--black);
+    }
+
+    .btn-reset {
+      background: var(--white);
+      border: var(--pixel-border);
+      color: var(--black);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.8rem;
+      padding: 10px 20px;
+      cursor: pointer;
+      display: block;
+      margin: 20px auto;
+      transition: transform 0.1s;
+    }
+
+    .btn-reset:active {
+      transform: translate(2px, 2px);
+    }
+
+    .chip-stack {
+      margin-top: 10px;
+    }
+
+    .chip-row {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+
+    .chip-denom {
+      width: 80px;
+      font-size: 0.7rem;
+    }
+
+    .chip-count {
+      width: 60px;
+      text-align: center;
+    }
+
+    .chip-total {
+      font-weight: bold;
+      margin-left: 10px;
+      font-size: 0.8rem;
+    }
+
+    .jokers {
+      grid-column: 1 / -1;
+    }
+
+    .jokers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .joker-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: var(--pixel-border);
+      padding: 10px;
+      border-radius: 3px;
+    }
+
+    .joker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .joker-name {
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .joker-rarity {
+      font-size: 0.6rem;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    .joker-effect {
+      font-size: 0.6rem;
+      margin: 5px 0;
+    }
+
+    .joker-toggle {
+      margin-top: 5px;
+    }
+
+    .common { background-color: #888888; }
+    .uncommon { background-color: #2ecc71; }
+    .rare { background-color: #3498db; }
+    .legendary { background-color: #e74c3c; }
+    .voucher { background-color: #f39c12; }
+  </style>
+</head>
+<body>
+  <h1>BALATRO CHIP CALCULATOR</h1>
+  
+  <div class="container">
+    <div class="section">
+      <h2>POKER HANDS</h2>
+      <div id="hands-container">
+        <!-- Hands will be added here by JavaScript -->
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>MULTIPLIERS</h2>
+      <div class="multiplier-input">
+        <label for="mult">Mult:</label>
+        <input type="number" id="mult" min="1" value="1" class="count">
+      </div>
+      <div class="multiplier-input">
+        <label for="xmult">XMult:</label>
+        <input type="number" id="xmult" min="1" value="1" class="count">
+      </div>
+
+      <h2>BONUSES</h2>
+      <div class="toggle-group">
+        <label class="toggle-label">
+          <span>Foil</span>
+          <label class="toggle">
+            <input type="checkbox" id="foil">
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+        <label class="toggle-label">
+          <span>Holographic</span>
+          <label class="toggle">
+            <input type="checkbox" id="holo">
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+        <label class="toggle-label">
+          <span>Polychrome</span>
+          <label class="toggle">
+            <input type="checkbox" id="poly">
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+      </div>
+
+      <h2>CHIP STACK</h2>
+      <div id="chip-stack" class="chip-stack">
+        <!-- Chip inputs will be added here by JavaScript -->
+      </div>
+    </div>
+
+    <div class="jokers section">
+      <h2>JOKERS</h2>
+      <div class="jokers-grid" id="jokers-container">
+        <!-- Jokers will be added here by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <div class="results">
+    <h2>TOTAL CHIPS</h2>
+    <div id="total" class="total">0</div>
+  </div>
+
+  <button id="reset" class="btn-reset">RESET ALL</button>
+
+  <script>
+    // Poker hands data
+    const HANDS = [
+      { name: 'Royal Flush', base: 100, mult: 8 },
+      { name: 'Straight Flush', base: 100, mult: 8 },
+      { name: 'Four of a Kind', base: 60, mult: 7 },
+      { name: 'Full House', base: 40, mult: 4 },
+      { name: 'Flush', base: 35, mult: 4 },
+      { name: 'Straight', base: 30, mult: 4 },
+      { name: 'Three of a Kind', base: 30, mult: 3 },
+      { name: 'Two Pair', base: 20, mult: 2 },
+      { name: 'Pair', base: 10, mult: 2 },
+      { name: 'High Card', base: 5, mult: 1 }
+    ];
+
+    // Chip denominations
+    const CHIP_DENOMS = [
+      { value: 1, name: 'White' },
+      { value: 5, name: 'Red' },
+      { value: 10, name: 'Blue' },
+      { value: 25, name: 'Green' },
+      { value: 100, name: 'Black' },
+      { value: 500, name: 'Purple' },
+      { value: 1000, name: 'Orange' },
+      { value: 5000, name: 'Gold' }
+    ];
+
+    // Jokers data
+    const JOKERS = [
+      { 
+        name: "Joker", 
+        effect: "No effect (base Joker)", 
+        rarity: "Common",
+        auto: false
+      },
+      { 
+        name: "Joker Stencil", 
+        effect: "Gains +1 Mult for each Joker Stencil you have (including this one)", 
+        rarity: "Common",
+        auto: false
+      },
+      { 
+        name: "Four Fingers", 
+        effect: "All Flushes and Straights can be made with 4 cards", 
+        rarity: "Uncommon",
+        auto: false
+      },
+      { 
+        name: "Mime", 
+        effect: "Played hand's base score is multiplied by 2", 
+        rarity: "Rare",
+        auto: true
+      },
+      { 
+        name: "Joker's Joker", 
+        effect: "This Joker gains +4 Mult for each Joker you have (including this one)", 
+        rarity: "Rare",
+        auto: false
+      },
+      { 
+        name: "Holographic", 
+        effect: "This Joker gives +10 Mult when played", 
+        rarity: "Uncommon",
+        auto: true
+      },
+      { 
+        name: "Lucky Cat", 
+        effect: "Gains +2 Mult when you win a hand with a Straight or better", 
+        rarity: "Uncommon",
+        auto: false
+      },
+      { 
+        name: "Raised Fist", 
+        effect: "If played hand contains a Pair, +30 Chips", 
+        rarity: "Common",
+        auto: true
+      },
+      { 
+        name: "Even Steven", 
+        effect: "If played hand contains only even numbers, +30 Chips", 
+        rarity: "Common",
+        auto: true
+      },
+      { 
+        name: "Odd Todd", 
+        effect: "If played hand contains only odd numbers, +31 Chips", 
+        rarity: "Common",
+        auto: true
+      },
+      { 
+        name: "Scholar", 
+        effect: "If played hand contains a King, +20 Chips", 
+        rarity: "Common",
+        auto: true
+      },
+      { 
+        name: "Business Card", 
+        effect: "If played hand contains a King or Queen, +20 Chips", 
+        rarity: "Common",
+        auto: true
+      },
+      { 
+        name: "Supernova", 
+        effect: "This Joker gains +1 Mult for each hand played", 
+        rarity: "Rare",
+        auto: false
+      },
+      { 
+        name: "Ride the Bus", 
+        effect: "This Joker gains +1 Mult for each consecutive hand played without a face card", 
+        rarity: "Rare",
+        auto: false
+      },
+      { 
+        name: "Space Joker", 
+        effect: "1 in 4 chance to give x2 Mult when played", 
+        rarity: "Uncommon",
+        auto: false
+      },
+      { 
+        name: "Hiker", 
+        effect: "Gains +1 Mult when you win a hand with a Full House or better", 
+        rarity: "Uncommon",
+        auto: false
+      },
+      { 
+        name: "Madness", 
+        effect: "Gains +1 Mult when you win a hand with a Flush or better", 
+        rarity: "Uncommon",
+        auto: false
+      },
+      { 
+        name: "Seal of Approval", 
+        effect: "+50% chips and mult of all other Jokers, max +200 chips/mult", 
+        rarity: "Legendary",
+        auto: false
+      },
+      { 
+        name: "Final Gambit", 
+        effect: "If this is your last Joker, +200 chips and +5 mult", 
+        rarity: "Legendary",
+        auto: false
+      }
+    ];
+
+    // Initialize the app when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize hands
+      const handsContainer = document.getElementById('hands-container');
+      HANDS.forEach((hand, index) => {
+        const handRow = document.createElement('div');
+        handRow.className = 'hand-row';
+        handRow.innerHTML = `
+          <span class="hand-name">${hand.name}</span>
+          <div class="hand-count">
+            <button class="btn" onclick="updateHand(${index}, -1)">-</button>
+            <span id="hand-${index}" class="count">0</span>
+            <button class="btn" onclick="updateHand(${index}, 1)">+</button>
+          </div>
+        `;
+        handsContainer.appendChild(handRow);
+      });
+
+      // Initialize chip stack
+      const chipStack = document.getElementById('chip-stack');
+      CHIP_DENOMS.forEach((chip, index) => {
+        const chipRow = document.createElement('div');
+        chipRow.className = 'chip-row';
+        chipRow.innerHTML = `
+          <span class="chip-denom">${chip.name} (${chip.value})</span>
+          <input type="number" id="chip-${index}" value="0" min="0" class="count chip-input">
+          <span class="chip-total" id="chip-total-${index}">= 0</span>
+        `;
+        chipStack.appendChild(chipRow);
+      });
+
+      // Initialize jokers
+      const jokersContainer = document.getElementById('jokers-container');
+      JOKERS.forEach((joker, index) => {
+        const jokerCard = document.createElement('div');
+        jokerCard.className = 'joker-card';
+        jokerCard.innerHTML = `
+          <div class="joker-header">
+            <span class="joker-name">${joker.name}</span>
+            <span class="joker-rarity ${joker.rarity.toLowerCase().replace(' ', '-')}">${joker.rarity}</span>
+          </div>
+          <div class="joker-effect">${joker.effect}</div>
+          <div class="joker-toggle">
+            <label class="toggle-label">
+              <span>Active</span>
+              <label class="toggle">
+                <input type="checkbox" id="joker-${index}">
+                <span class="toggle-slider"></span>
+              </label>
+            </label>
+          </div>
+        `;
+        jokersContainer.appendChild(jokerCard);
+      });
+
+      // Add event listeners
+      document.getElementById('mult').addEventListener('change', calculateTotal);
+      document.getElementById('xmult').addEventListener('change', calculateTotal);
+      document.getElementById('foil').addEventListener('change', calculateTotal);
+      document.getElementById('holo').addEventListener('change', calculateTotal);
+      document.getElementById('poly').addEventListener('change', calculateTotal);
+      document.getElementById('reset').addEventListener('click', resetAll);
+
+      // Add chip input listeners
+      document.querySelectorAll('.chip-input').forEach((input, index) => {
+        input.addEventListener('change', () => updateChipTotal(index));
+      });
+    });
+
+    // Global functions
+    window.updateHand = function(index, delta) {
+      const countElement = document.getElementById(`hand-${index}`);
+      let count = parseInt(countElement.textContent) + delta;
+      count = Math.max(0, count); // Don't go below 0
+      countElement.textContent = count;
+      calculateTotal();
+    };
+
+    window.updateChipTotal = function(index) {
+      const input = document.getElementById(`chip-${index}`);
+      const value = parseInt(input.value) || 0;
+      const chipValue = CHIP_DENOMS[index].value;
+      const total = value * chipValue;
+      document.getElementById(`chip-total-${index}`).textContent = `= ${total}`;
+      calculateTotal();
+    };
+
+    window.calculateTotal = function() {
+      // Calculate hand total
+      let handTotal = 0;
+      HANDS.forEach((hand, index) => {
+        const count = parseInt(document.getElementById(`hand-${index}`).textContent) || 0;
+        handTotal += count * hand.base * hand.mult;
+      });
+
+      // Get multipliers
+      const mult = parseInt(document.getElementById('mult').value) || 1;
+      const xmult = parseInt(document.getElementById('xmult').value) || 1;
+
+      // Apply bonuses
+      let bonus = 0;
+      if (document.getElementById('foil').checked) bonus += 10;
+      if (document.getElementById('holo').checked) bonus += 10;
+      if (document.getElementById('poly').checked) bonus += 15;
+
+      // Calculate chip stack total
+      let chipTotal = 0;
+      CHIP_DENOMS.forEach((chip, index) => {
+        const count = parseInt(document.getElementById(`chip-${index}`).value) || 0;
+        chipTotal += count * chip.value;
+      });
+
+      // Calculate final total
+      const total = (handTotal + bonus) * mult * xmult + chipTotal;
+      document.getElementById('total').textContent = total.toLocaleString();
+    };
+
+    window.resetAll = function() {
+      // Reset hands
+      HANDS.forEach((hand, index) => {
+        document.getElementById(`hand-${index}`).textContent = '0';
+      });
+
+      // Reset multipliers
+      document.getElementById('mult').value = '1';
+      document.getElementById('xmult').value = '1';
+
+      // Reset bonuses
+      document.getElementById('foil').checked = false;
+      document.getElementById('holo').checked = false;
+      document.getElementById('poly').checked = false;
+
+      // Reset chip stack
+      document.querySelectorAll('.chip-input').forEach(input => {
+        input.value = '0';
+      });
+
+      // Reset jokers
+      JOKERS.forEach((joker, index) => {
+        document.getElementById(`joker-${index}`).checked = false;
+      });
+
+      // Reset chip totals
+      CHIP_DENOMS.forEach((chip, index) => {
+        document.getElementById(`chip-total-${index}`).textContent = '= 0';
+      });
+
+      // Reset total
+      document.getElementById('total').textContent = '0';
+    };
+
+    // Initial calculation
+    window.calculateTotal();
+  </script>
+</body>
+</html>
